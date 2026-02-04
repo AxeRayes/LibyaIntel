@@ -1,0 +1,10 @@
+[Unit]
+Description=LibyaIntel alerts watchdog
+
+[Service]
+Type=oneshot
+User=libyaintel
+Group=libyaintel
+EnvironmentFile=-/etc/libyaintel/libyaintel.env
+ExecStart=/opt/libyaintel/.venv/bin/python /opt/libyaintel/scripts/alerts_watchdog.py
+SyslogIdentifier=libyaintel-alerts-watchdog

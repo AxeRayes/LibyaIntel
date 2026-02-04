@@ -1,0 +1,12 @@
+[Unit]
+Description=LibyaIntel procurement discovery
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=akram
+WorkingDirectory=/home/akram/libyaintel
+ExecStart=/home/akram/libyaintel/scripts/run_job.sh runner.jobs.procurement_discover
+Environment=TZ=UTC
+TimeoutStartSec=900

@@ -1,0 +1,25 @@
+@import "tailwindcss";
+
+:root {
+  --paper: #f6f1e7;
+  --ink: #121316;
+  --panel: #ffffff;
+  --muted: #5f6b7a;
+  --accent: #0f766e;
+  --accent-2: #f59e0b;
+  --line: #e4e7ec;
+  --ring: rgba(15, 118, 110, 0.25);
+}
+
+@theme inline {
+  --color-background: var(--paper);
+  --color-foreground: var(--ink);
+  --font-sans: var(--font-space-grotesk);
+  --font-display: var(--font-fraunces);
+}
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-space-grotesk), system-ui, sans-serif;
+}

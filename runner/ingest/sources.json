@@ -1,0 +1,411 @@
+[
+  {
+    "id": "cbl",
+    "name": "Central Bank of Libya (CBL)",
+    "type": "official",
+    "region": "west",
+    "url": "https://cbl.gov.ly/en/",
+    "enabled": true,
+    "tags": [
+      "banking",
+      "fx",
+      "regulation",
+      "official"
+    ],
+    "ingest_method": "page",
+    "sitemap_index": "https://cbl.gov.ly/sitemap_index.xml",
+    "sitemap_seed_only": true,
+    "sitemap_only": [
+      "post-sitemap"
+    ],
+    "sitemap_include_prefixes": [
+      "/en/statement-",
+      "/en/clarificatory-statement",
+      "/en/revenue-and-expenditure-statement"
+    ],
+    "sitemap_include_non_en": true,
+    "prefer_sitemap": true,
+    "disable_harvest": true,
+    "sitemap_exclude_prefixes": [
+      "/en/history/",
+      "/en/our-mission/",
+      "/en/strategic-plan/",
+      "/en/careers/",
+      "/en/contact/",
+      "/en/about/",
+      "/en/downloads/",
+      "/en/publications/",
+      "/en/payment-and-settlement/",
+      "/en/banking-supervision/",
+      "/en/market-operations/",
+      "/en/banknotes/",
+      "/reports/",
+      "/economic-bulletin/",
+      "/services/",
+      "/en/services/",
+      "/media/",
+      "/en/media/",
+      "/events/",
+      "/en/events/",
+      "/tenders/",
+      "/en/tenders/",
+      "/circulars/",
+      "/en/circulars/",
+      "/tag/",
+      "/category/",
+      "/author/",
+      "/page/"
+    ],
+    "link_allow": [
+      "/en/statement-",
+      "/en/clarificatory-statement",
+      "/en/revenue-and-expenditure-statement"
+    ],
+    "link_deny": [
+      "/en/blog",
+      "/en/category/",
+      "/page/",
+      "/tag/",
+      "/author/",
+      "/contact",
+      "/privacy",
+      "/terms"
+    ],
+    "is_active": false
+  },
+  {
+    "id": "noc",
+    "name": "National Oil Corporation (NOC)",
+    "type": "official",
+    "region": "national",
+    "url": "https://noc.ly/en/",
+    "enabled": true,
+    "tags": [
+      "oil_gas",
+      "official"
+    ],
+    "ingest_method": "page",
+    "link_deny": [
+      "/about",
+      "/contact",
+      "/careers",
+      "/subsidiaries",
+      "/privacy",
+      "/terms",
+      "/page/",
+      "/tag/",
+      "/author/"
+    ]
+  },
+  {
+    "id": "unsmil",
+    "name": "UNSMIL",
+    "type": "institutional",
+    "region": "international",
+    "url": "https://unsmil.unmissions.org/en/press-releases",
+    "enabled": true,
+    "allow_seed_without_article_meta": true,
+    "allow_without_article_meta": true,
+    "tags": [
+      "security",
+      "politics",
+      "un"
+    ],
+    "ingest_method": "page",
+    "views_ajax": {
+      "ajax_path": "/en/views/ajax",
+      "view_name": "news",
+      "view_display_id": "block_3",
+      "view_args": "all",
+      "view_path": "/node/29242",
+      "view_dom_id": "9e06327e0eb48a993e135a40785346ace27a0bda422de93facf58e235cf055b2",
+      "pager_element": 0,
+      "allow_prefixes": [
+        "/en/unmiss/",
+        "/en/unsmil/"
+      ]
+    },
+    "seed_pages": [
+      "https://unsmil.unmissions.org/en/press-releases",
+      "https://unsmil.unmissions.org/en/news"
+    ],
+    "link_allow": [
+      "/press-releases/",
+      "/news/",
+      "/stories/"
+    ],
+    "link_deny": [
+      "/media-contacts",
+      "/security-council-resolutions",
+      "/about",
+      "/contact",
+      "/page/",
+      "/tag/",
+      "/author/"
+    ]
+  },
+  {
+    "id": "reuters_libya",
+    "name": "Reuters (Libya)",
+    "type": "news",
+    "region": "international",
+    "url": "https://www.reuters.com/world/africa/libya/",
+    "enabled": false,
+    "tags": [
+      "news",
+      "international",
+      "macro"
+    ],
+    "ingest_method": "page",
+    "link_deny": [
+      "/video",
+      "/graphics",
+      "/live",
+      "/podcast",
+      "/page/"
+    ]
+  },
+  {
+    "id": "libya_observer",
+    "name": "Libya Observer",
+    "type": "news",
+    "region": "west",
+    "url": "https://libyaobserver.ly/",
+    "enabled": true,
+    "tags": [
+      "news",
+      "business",
+      "policy"
+    ],
+    "ingest_method": "page",
+    "seed_pages": [
+      "https://libyaobserver.ly/news?page={page}",
+      "https://libyaobserver.ly/inbrief?page={page}"
+    ],
+    "seed_page_range": [
+      0,
+      4
+    ],
+    "sitemap_include_prefixes": [
+      "/news/",
+      "/inbrief/",
+      "/economy/",
+      "/politics/",
+      "/sports/",
+      "/opinions/"
+    ],
+    "link_deny": [
+      "/page/",
+      "/tag/",
+      "/author/",
+      "/contact",
+      "/privacy",
+      "/terms"
+    ],
+    "is_active": true,
+    "seed_url": "https://libyaobserver.ly/news",
+    "priority": 1
+  },
+  {
+    "id": "libya_review",
+    "name": "Libya Review",
+    "type": "news",
+    "region": "national",
+    "url": "https://libyareview.com/",
+    "enabled": true,
+    "tags": [
+      "news",
+      "international",
+      "business"
+    ],
+    "ingest_method": "page",
+    "link_deny": [
+      "/page/",
+      "/tag/",
+      "/author/"
+    ]
+  },
+  {
+    "id": "alwasat",
+    "name": "Al-Wasat",
+    "type": "news",
+    "region": "east_west",
+    "url": "https://alwasat.ly/",
+    "enabled": true,
+    "tags": [
+      "news",
+      "arabic",
+      "politics",
+      "economy"
+    ],
+    "ingest_method": "page",
+    "sitemap_index": "https://alwasat.ly/sitemap.xml",
+    "sitemap_only": [
+      "latest_news_sitemap",
+      "old_news_sitemap"
+    ],
+    "prefer_sitemap": true,
+    "disable_harvest": true,
+    "link_deny": [
+      "/page/",
+      "/tag/",
+      "/author/"
+    ]
+  },
+  {
+    "id": "218tv",
+    "name": "218 TV",
+    "type": "news",
+    "region": "east_west",
+    "url": "https://218tv.net/",
+    "enabled": false,
+    "tags": [
+      "news",
+      "arabic"
+    ],
+    "ingest_method": "page",
+    "link_deny": [
+      "/page/",
+      "/tag/",
+      "/author/"
+    ]
+  },
+  {
+    "id": "libya_alahrar",
+    "name": "Libya Al-Ahrar",
+    "type": "news",
+    "region": "west",
+    "url": "https://libyaalahrar.tv/",
+    "enabled": true,
+    "tags": [
+      "news",
+      "arabic"
+    ],
+    "ingest_method": "page",
+    "link_deny": [
+      "/page/",
+      "/tag/",
+      "/author/"
+    ]
+  },
+  {
+    "id": "world_bank_libya",
+    "name": "World Bank (Libya)",
+    "type": "institutional",
+    "region": "international",
+    "url": "https://www.worldbank.org/en/country/libya",
+    "enabled": true,
+    "tags": [
+      "economy",
+      "data",
+      "institutional"
+    ],
+    "ingest_method": "page",
+    "link_deny": [
+      "/page/",
+      "/tag/",
+      "/author/"
+    ]
+  },
+  {
+    "id": "imf_libya",
+    "name": "IMF (Libya)",
+    "type": "institutional",
+    "region": "international",
+    "url": "https://www.imf.org/en/Countries/LBY",
+    "enabled": false,
+    "tags": [
+      "economy",
+      "data",
+      "institutional"
+    ],
+    "ingest_method": "page",
+    "link_deny": [
+      "/page/",
+      "/tag/",
+      "/author/"
+    ]
+  },
+  {
+    "id": "fb_cbl_official",
+    "name": "CBL Facebook (Official)",
+    "type": "facebook",
+    "region": "west",
+    "url": "https://www.facebook.com/",
+    "page_handle": "CentralBankOfLibya",
+    "enabled": false,
+    "tags": [
+      "banking",
+      "official",
+      "facebook"
+    ],
+    "ingest_method": "facebook_manual_or_api",
+    "notes": "Do not scrape with page_ingest. Use approved API or manual capture pipeline."
+  },
+  {
+    "id": "fb_noc_official",
+    "name": "NOC Facebook (Official)",
+    "type": "facebook",
+    "region": "national",
+    "url": "https://www.facebook.com/",
+    "page_handle": "NOC.LIBYA",
+    "enabled": false,
+    "tags": [
+      "oil_gas",
+      "official",
+      "facebook"
+    ],
+    "ingest_method": "facebook_manual_or_api",
+    "notes": "Do not scrape with page_ingest. Use approved API or manual capture pipeline."
+  },
+  {
+    "id": "fb_unsmil_official",
+    "name": "UNSMIL Facebook (Official)",
+    "type": "facebook",
+    "region": "international",
+    "url": "https://www.facebook.com/",
+    "page_handle": "UNSMIL",
+    "enabled": false,
+    "tags": [
+      "security",
+      "un",
+      "facebook"
+    ],
+    "ingest_method": "facebook_manual_or_api",
+    "notes": "Do not scrape with page_ingest. Use approved API or manual capture pipeline."
+  },
+  {
+    "id": "fb_municipality_tripoli",
+    "name": "Tripoli Municipality Facebook",
+    "type": "facebook",
+    "region": "west",
+    "url": "https://www.facebook.com/",
+    "page_handle": "TripoliMunicipality",
+    "enabled": false,
+    "tags": [
+      "local",
+      "municipal",
+      "west",
+      "facebook"
+    ],
+    "ingest_method": "facebook_manual_or_api",
+    "notes": "Example placeholder. Replace page_handle with the real official page you trust."
+  },
+  {
+    "id": "fb_municipality_benghazi",
+    "name": "Benghazi Municipality Facebook",
+    "type": "facebook",
+    "region": "east",
+    "url": "https://www.facebook.com/",
+    "page_handle": "BenghaziMunicipality",
+    "enabled": false,
+    "tags": [
+      "local",
+      "municipal",
+      "east",
+      "facebook"
+    ],
+    "ingest_method": "facebook_manual_or_api",
+    "notes": "Example placeholder. Replace page_handle with the real official page you trust."
+  }
+]

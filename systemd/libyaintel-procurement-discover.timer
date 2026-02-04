@@ -1,0 +1,10 @@
+[Unit]
+Description=LibyaIntel procurement discovery timer
+
+[Timer]
+OnCalendar=*-*-* 00/6:00:00
+RandomizedDelaySec=120
+Persistent=true
+
+[Install]
+WantedBy=timers.target

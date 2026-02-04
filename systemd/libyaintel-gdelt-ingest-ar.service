@@ -1,0 +1,18 @@
+[Unit]
+Description=LibyaIntel GDELT ingest (Arabic)
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=akram
+WorkingDirectory=/home/akram/libyaintel
+ExecStart=/home/akram/libyaintel/scripts/run_job.sh runner.jobs.gdelt_ingest
+Environment=TZ=UTC
+Environment=GDELT_RUN_LANG=ar
+Environment=GDELT_MAX_TOTAL=25
+Environment=GDELT_TIMEOUT_SEC=25
+Environment=GDELT_MAX_RETRIES=1
+Environment=GDELT_SLEEP_BASE=2.2
+Environment=GDELT_SLEEP_JITTER=1.0
+TimeoutStartSec=900

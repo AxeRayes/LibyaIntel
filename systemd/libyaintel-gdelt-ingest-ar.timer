@@ -1,0 +1,12 @@
+[Unit]
+Description=Run LibyaIntel GDELT ingest Arabic every 60 minutes
+
+[Timer]
+OnBootSec=10min
+OnUnitActiveSec=60min
+RandomizedDelaySec=120
+Persistent=true
+Unit=libyaintel-gdelt-ingest-ar.service
+
+[Install]
+WantedBy=timers.target

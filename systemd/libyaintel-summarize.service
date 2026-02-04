@@ -1,0 +1,13 @@
+[Unit]
+Description=LibyaIntel summarize_pending
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=akram
+WorkingDirectory=/home/akram/libyaintel
+ExecStart=/home/akram/libyaintel/scripts/run_job.sh runner.jobs.summarize_pending
+Environment=TZ=UTC
+# Launch-mode defaults are already fast, but keep a timeout:
+TimeoutStartSec=600

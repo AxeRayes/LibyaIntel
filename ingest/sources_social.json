@@ -1,0 +1,177 @@
+[
+  {
+    "id": "fb_alwasat",
+    "name": "بوابة الوسط (Alwasat)",
+    "type": "facebook",
+    "subtype": "institutional_media",
+    "language": ["ar"],
+    "region_coverage": ["west", "east", "national"],
+    "page_url": "https://www.facebook.com/AlwasatOfficial",
+    "page_handle": "AlwasatOfficial",
+    "enabled": true,
+    "tags": ["news", "general"]
+  },
+  {
+    "id": "fb_libya_alahrar",
+    "name": "قناة ليبيا الأحرار (Libya Alahrar TV)",
+    "type": "facebook",
+    "subtype": "tv_channel",
+    "language": ["ar", "en"],
+    "region_coverage": ["west", "national"],
+    "page_url": "https://www.facebook.com/LibyaAlAhrar",
+    "page_handle": "LibyaAlAhrar",
+    "enabled": true,
+    "tags": ["news", "politics"]
+  },
+  {
+    "id": "fb_218tv",
+    "name": "قناة 218 (218TV)",
+    "type": "facebook",
+    "subtype": "tv_channel",
+    "language": ["ar"],
+    "region_coverage": ["west", "east", "national"],
+    "page_url": "https://www.facebook.com/218tv",
+    "page_handle": "218tv",
+    "enabled": true,
+    "tags": ["news", "general"]
+  },
+  {
+    "id": "fb_218news",
+    "name": "قناة 218NEWS (218News)",
+    "type": "facebook",
+    "subtype": "tv_news",
+    "language": ["ar"],
+    "region_coverage": ["west", "east", "national"],
+    "page_url": "https://www.facebook.com/218News",
+    "page_handle": "218News",
+    "enabled": true,
+    "tags": ["news", "breaking"]
+  },
+  {
+    "id": "fb_alhadath",
+    "name": "الحدث الليبي (Al Hadath Libya)",
+    "type": "facebook",
+    "subtype": "news_outlet",
+    "language": ["ar"],
+    "region_coverage": ["east", "national"],
+    "page_url": "https://www.facebook.com/ALHadathNews.ly",
+    "page_handle": "ALHadathNews.ly",
+    "enabled": true,
+    "tags": ["news", "security", "politics"]
+  },
+  {
+    "id": "fb_akhbar_libya24",
+    "name": "أخبار ليبيا 24 (Akhbar Libya 24)",
+    "type": "facebook",
+    "subtype": "news_agency",
+    "language": ["ar"],
+    "region_coverage": ["west", "east", "national"],
+    "page_url": "https://www.facebook.com/AkhbarLibya24",
+    "page_handle": "AkhbarLibya24",
+    "enabled": true,
+    "tags": ["news", "general"]
+  },
+  {
+    "id": "fb_libya24tv",
+    "name": "قناة ليبيا 24 (Libya 24 TV)",
+    "type": "facebook",
+    "subtype": "tv_channel",
+    "language": ["ar"],
+    "region_coverage": ["east", "national"],
+    "page_url": "https://www.facebook.com/Libya24TV",
+    "page_handle": "Libya24TV",
+    "enabled": true,
+    "tags": ["news", "breaking"]
+  },
+
+  {
+    "id": "fb_libyan_observatory",
+    "name": "Libyan Observatory (المرصد الليبية)",
+    "type": "facebook",
+    "subtype": "news_outlet",
+    "language": ["ar"],
+    "region_coverage": ["east", "national"],
+    "page_url": "https://www.facebook.com/observatoryLY",
+    "page_handle": "observatoryLY",
+    "enabled": true,
+    "tags": ["news", "security", "analysis"],
+    "notes": "Official page for Al-Marsad Observatory. Enabled and treated as institutional media."
+  },
+
+  {
+    "id": "fb_libya_observer",
+    "name": "Libya Observer",
+    "type": "facebook",
+    "subtype": "institutional_media",
+    "language": ["en", "ar"],
+    "region_coverage": ["west", "national"],
+    "page_url": "https://www.facebook.com/lyobserver",
+    "page_handle": "lyobserver",
+    "enabled": true,
+    "tags": ["news", "english"]
+  },
+  {
+    "id": "fb_libya_herald",
+    "name": "Libya Herald",
+    "type": "facebook",
+    "subtype": "institutional_media",
+    "language": ["en"],
+    "region_coverage": ["west", "national"],
+    "page_url": "https://www.facebook.com/LibyaHerald",
+    "page_handle": "LibyaHerald",
+    "enabled": true,
+    "tags": ["news", "english", "business"]
+  },
+  {
+    "id": "fb_libya_review",
+    "name": "Libya Review",
+    "type": "facebook",
+    "subtype": "institutional_media",
+    "language": ["en"],
+    "region_coverage": ["national"],
+    "page_url": "https://www.facebook.com/LibyaReview",
+    "page_handle": "LibyaReview",
+    "enabled": true,
+    "tags": ["news", "english"]
+  },
+  {
+    "id": "fb_libya_update",
+    "name": "The Libya Update",
+    "type": "facebook",
+    "subtype": "institutional_media",
+    "language": ["en"],
+    "region_coverage": ["east", "west", "national"],
+    "page_url": "https://www.facebook.com/ly.updates",
+    "page_handle": "ly.updates",
+    "enabled": true,
+    "tags": ["news", "english"]
+  },
+
+  {
+    "id": "fb_jamal_alkomaty",
+    "name": "جمال القماطي (Jamal Alkomaty)",
+    "type": "facebook",
+    "subtype": "independent_journalist",
+    "language": ["ar"],
+    "region_coverage": ["east"],
+    "page_url": "https://www.facebook.com/JamalAlkomaty",
+    "page_handle": "JamalAlkomaty",
+    "enabled": true,
+    "tags": ["field_reports", "east", "crisis"],
+    "notes": "Treat as eyewitness. Require corroboration for high-impact claims."
+  },
+
+  {
+    "id": "fb_elkul",
+    "name": "El Kul Media",
+    "type": "facebook",
+    "subtype": "independent_media",
+    "language": ["ar"],
+    "region_coverage": ["west", "east", "national"],
+    "page_url": "https://www.facebook.com/elkulmedia",
+    "page_handle": "elkulmedia",
+    "enabled": true,
+    "tags": ["society", "human_interest"],
+    "notes": "Contributor network. Lower relevance for investor-grade intel, but useful for social context."
+  }
+]

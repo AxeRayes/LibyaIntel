@@ -1,0 +1,10 @@
+[Unit]
+Description=Run LibyaIntel daily_metrics daily at 00:05 UTC
+
+[Timer]
+OnCalendar=*-*-* 00:05:00 UTC
+Persistent=true
+Unit=libyaintel-daily-metrics.service
+
+[Install]
+WantedBy=timers.target

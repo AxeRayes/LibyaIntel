@@ -1,0 +1,11 @@
+[Unit]
+Description=Run LibyaIntel summarize_pending every 5 minutes
+
+[Timer]
+OnBootSec=3min
+OnUnitActiveSec=5min
+Persistent=true
+Unit=libyaintel-summarize.service
+
+[Install]
+WantedBy=timers.target

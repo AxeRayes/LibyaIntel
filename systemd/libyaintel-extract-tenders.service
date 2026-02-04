@@ -1,0 +1,8 @@
+[Unit]
+Description=Extract structured tenders
+
+[Service]
+User=libyaintel
+EnvironmentFile=/etc/libyaintel/libyaintel.env
+WorkingDirectory=/opt/libyaintel
+ExecStart=/opt/libyaintel/.venv/bin/python runner/jobs/extract_tenders.py

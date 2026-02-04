@@ -1,0 +1,12 @@
+[Unit]
+Description=LibyaIntel GDELT ingest
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=akram
+WorkingDirectory=/home/akram/libyaintel
+ExecStart=/home/akram/libyaintel/scripts/run_job.sh runner.jobs.gdelt_ingest
+Environment=TZ=UTC
+TimeoutStartSec=900

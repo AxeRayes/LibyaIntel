@@ -1,0 +1,14 @@
+[Unit]
+Description=LibyaIntel page_ingest
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=akram
+WorkingDirectory=/home/akram/libyaintel
+ExecStart=/home/akram/libyaintel/scripts/run_job.sh runner.ingest.page_ingest
+# If you need env vars, add them here:
+Environment=TZ=UTC
+# Hard stop if it hangs:
+TimeoutStartSec=900

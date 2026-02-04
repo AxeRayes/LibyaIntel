@@ -1,0 +1,11 @@
+[Unit]
+Description=Run LibyaIntel page_ingest every 15 minutes
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=15min
+Persistent=true
+Unit=libyaintel-page-ingest.service
+
+[Install]
+WantedBy=timers.target

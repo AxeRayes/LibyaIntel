@@ -1,0 +1,11 @@
+fastapi
+uvicorn[standard]
+supabase
+python-dotenv
+feedparser
+beautifulsoup4
+requests
+lxml
+psycopg2-binary
+playwright
+resend
