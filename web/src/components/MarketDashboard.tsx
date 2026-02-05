@@ -73,6 +73,7 @@ function FxCard({
 
   const asOf = official?.as_of || parallel?.as_of || null;
   const hasWarn = (official?.status && official.status !== "ok") || (parallel?.status && parallel.status !== "ok");
+  const showOfficialRow = code !== "EGP" || officialValue !== undefined;
 
   return (
     <div className="rounded-2xl border border-[var(--line)] bg-white/90 p-4">
@@ -91,15 +92,17 @@ function FxCard({
       </div>
 
       <div className="mt-4 space-y-2 text-sm">
-        <div className="flex items-center justify-between gap-3">
-          <div className="text-xs uppercase tracking-[0.18em] text-[var(--muted)]">
-            Official
+        {showOfficialRow ? (
+          <div className="flex items-center justify-between gap-3">
+            <div className="text-xs uppercase tracking-[0.18em] text-[var(--muted)]">
+              Official
+            </div>
+            <div className="font-semibold">
+              {formatNumber(officialValue, 4)}{" "}
+              <span className="text-xs font-medium text-[var(--muted)]">LYD</span>
+            </div>
           </div>
-          <div className="font-semibold">
-            {formatNumber(officialValue, 4)}{" "}
-            <span className="text-xs font-medium text-[var(--muted)]">LYD</span>
-          </div>
-        </div>
+        ) : null}
         <div className="flex items-center justify-between gap-3">
           <div className="text-xs uppercase tracking-[0.18em] text-[var(--muted)]">
             Parallel (Indicative)
@@ -229,4 +232,3 @@ export default function MarketDashboard({ quotes }: { quotes: MarketQuotesRespon
     </section>
   );
 }
-
