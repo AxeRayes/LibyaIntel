@@ -416,6 +416,14 @@ def run(db_url: str, source_filter: str | None = None):
         f"fetch_ok={c_fetch_ok} gate_html={c_gate_html} gate_attach={c_gate_attach} "
         f"gate_fail={c_gate_fail} inserted={c_inserted}"
     )
+    if c_candidates:
+        gate_fail_rate = c_gate_fail / c_candidates
+        if c_inserted == 0 and c_gate_fail:
+            print(
+                "EXTRACT_WARN inserted=0 "
+                f"gate_fail_rate={gate_fail_rate:.2f} "
+                f"gate_fail={c_gate_fail} candidates={c_candidates}"
+            )
 
 
 def main():
