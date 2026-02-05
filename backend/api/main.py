@@ -3,6 +3,7 @@ import base64
 import re
 import html as _html
 from datetime import datetime, timedelta, timezone
+from decimal import Decimal
 
 import httpx
 
@@ -78,6 +79,70 @@ def _decode_cursor(token: str | None) -> tuple[str, str] | None:
 @app.get("/health")
 def health():
     return {"ok": True}
+
+
+class MarketQuoteItem(BaseModel):
+    instrument: str
+    rate_type: str
+    quote_currency: str
+    value: float
+    unit: str | None = None
+    as_of: str
+    source_name: str
+    source_url: str
+    status: str
+
+
+@app.get("/api/market/quotes")
+def market_quotes():
+    sb = get_client()
+    if not _table_exists(sb, "market_quotes"):
+        return {"as_of": None, "items": []}
+
+    res = (
+        sb.table("market_quotes")
+        .select(
+            "instrument,rate_type,quote_currency,value,unit,as_of,source_name,source_url,status"
+        )
+        .execute()
+    )
+    rows = res.data or []
+
+    items: list[MarketQuoteItem] = []
+    latest_as_of: str | None = None
+    for row in rows:
+        value = row.get("value")
+        if isinstance(value, Decimal):
+            value = float(value)
+        elif isinstance(value, str):
+            try:
+                value = float(value)
+            except ValueError:
+                value = 0.0
+
+        as_of = row.get("as_of") or ""
+        if as_of and (latest_as_of is None or as_of > latest_as_of):
+            latest_as_of = as_of
+
+        try:
+            items.append(
+                MarketQuoteItem(
+                    instrument=row.get("instrument") or "",
+                    rate_type=row.get("rate_type") or "",
+                    quote_currency=row.get("quote_currency") or "",
+                    value=value if isinstance(value, (int, float)) else 0.0,
+                    unit=row.get("unit"),
+                    as_of=as_of,
+                    source_name=row.get("source_name") or "",
+                    source_url=row.get("source_url") or "",
+                    status=row.get("status") or "error",
+                )
+            )
+        except Exception:
+            continue
+
+    items.sort(key=lambda i: (i.instrument, i.rate_type, i.quote_currency))
+    return {"as_of": latest_as_of, "items": [i.model_dump() for i in items]}
 
 
 @app.get("/feed")

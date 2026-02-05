@@ -17,3 +17,10 @@ build/
 =
 procurement-
 source_key=lpma_tenders
+
+# Local keys / scratch
+Github_SSH
+Github_SSH.pub
+LibyaIntel_SSH
+LibyaIntel_SSH.pub
+0

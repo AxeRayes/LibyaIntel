@@ -26,7 +26,8 @@ if [ -f "/etc/libyaintel/libyaintel.env" ]; then
   source /etc/libyaintel/libyaintel.env
   set +a
 fi
-for f in /opt/libyaintel/backend/migrations/*.sql; do
+shopt -s nullglob
+for f in /opt/libyaintel/migrations/*.sql; do
   echo "APPLY $(basename "$f")"
   psql "$DATABASE_URL" -f "$f"
 done
