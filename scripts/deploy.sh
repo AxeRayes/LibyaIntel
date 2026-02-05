@@ -72,6 +72,12 @@ REF="$1"
 DEPLOY_DIR="${DEPLOY_DIR:-/opt/libyaintel}"
 cd "$DEPLOY_DIR"
 
+if [ -n "$(git status --porcelain)" ]; then
+  echo "DEPLOY_ABORT dirty git working tree"
+  git status --porcelain
+  exit 1
+fi
+
 git fetch --tags --prune
 git checkout -f "$REF"
 git reset --hard "$REF"
