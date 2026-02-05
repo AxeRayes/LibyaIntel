@@ -8,10 +8,13 @@ Type=simple
 User=libyaintel
 Group=libyaintel
 WorkingDirectory=/opt/libyaintel/web
+EnvironmentFile=/etc/libyaintel/libyaintel.env
 Environment=NODE_ENV=production
 Environment=NEXT_TELEMETRY_DISABLED=1
 Environment=API_BASE=http://127.0.0.1:8000
-ExecStart=/usr/bin/npm run start -- -p 3000 -H 127.0.0.1
+Environment=HOSTNAME=127.0.0.1
+Environment=PORT=3000
+ExecStart=/usr/bin/node /opt/libyaintel/web/.next/standalone/server.js
 
 Restart=always
 RestartSec=5

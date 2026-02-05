@@ -4,8 +4,6 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000";
-
 export default function ReportsPage() {
   const router = useRouter();
   const [accessToken, setAccessToken] = useState<string | null>(null);
@@ -55,7 +53,7 @@ export default function ReportsPage() {
         limit: 80,
       };
 
-      const res = await fetch(`${API_BASE}/private/reports/generate`, {
+      const res = await fetch(`/private/reports/generate`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -81,7 +79,7 @@ export default function ReportsPage() {
     if (!markdown || !accessToken) return;
     setSaveStatus("Saving...");
     try {
-      const res = await fetch(`${API_BASE}/private/reports/save`, {
+      const res = await fetch(`/private/reports/save`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

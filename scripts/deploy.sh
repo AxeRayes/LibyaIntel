@@ -13,6 +13,14 @@ echo "DEPLOY_PULL"
 git fetch origin
 git reset --hard origin/main
 
+echo "DEPLOY_ENV"
+# Needed for Next.js build-time NEXT_PUBLIC_* vars (and for migrations).
+if [ -f "/etc/libyaintel/libyaintel.env" ]; then
+  set -a
+  source /etc/libyaintel/libyaintel.env
+  set +a
+fi
+
 echo "DEPLOY_VENV"
 cd /opt/libyaintel/backend
 if [ ! -x /opt/libyaintel/backend/.venv/bin/pip ]; then
@@ -31,11 +39,6 @@ npm run build
 sudo chown -R libyaintel:libyaintel /opt/libyaintel/web/.next /opt/libyaintel/web/node_modules 2>/dev/null || true
 
 echo "DEPLOY_MIGRATIONS"
-if [ -f "/etc/libyaintel/libyaintel.env" ]; then
-  set -a
-  source /etc/libyaintel/libyaintel.env
-  set +a
-fi
 shopt -s nullglob
 for f in /opt/libyaintel/migrations/*.sql; do
   echo "APPLY $(basename "$f")"

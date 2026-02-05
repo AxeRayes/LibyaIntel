@@ -5,11 +5,6 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 
-const API_BASE =
-  process.env.NEXT_PUBLIC_API_BASE ||
-  process.env.API_BASE ||
-  "http://localhost:8000";
-
 type Activity = {
   total_24h: number;
   high_impact_24h: number;
@@ -85,7 +80,7 @@ export default function DashboardPage() {
     const { data } = await supabase.auth.getSession();
     const token = data.session?.access_token;
     if (!token) return null;
-    const res = await fetch(`${API_BASE}/private/activity`, {
+    const res = await fetch(`/private/activity`, {
       cache: "no-store",
       headers: { Authorization: `Bearer ${token}` },
     });
@@ -107,7 +102,7 @@ export default function DashboardPage() {
       if (query) params.set("q", query);
       if (category !== "all") params.set("category", category);
       if (source !== "all") params.set("source", source);
-      const res = await fetch(`${API_BASE}/private/search?${params.toString()}`, {
+      const res = await fetch(`/private/search?${params.toString()}`, {
         cache: "no-store",
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -124,7 +119,7 @@ export default function DashboardPage() {
 
   const fetchSavedSearches = async () => {
     if (!accessToken) return;
-    const res = await fetch(`${API_BASE}/private/saved-searches`, {
+    const res = await fetch(`/private/saved-searches`, {
       cache: "no-store",
       headers: { Authorization: `Bearer ${accessToken}` },
     });
@@ -147,7 +142,7 @@ export default function DashboardPage() {
       category: category !== "all" ? category : null,
       source: source !== "all" ? source : null,
     };
-    const res = await fetch(`${API_BASE}/private/saved-searches`, {
+    const res = await fetch(`/private/saved-searches`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -169,7 +164,7 @@ export default function DashboardPage() {
       return;
     }
     setAlertStatus(null);
-    const res = await fetch(`${API_BASE}/private/alerts`, {
+    const res = await fetch(`/private/alerts`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
