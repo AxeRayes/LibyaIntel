@@ -1,27 +1,13 @@
-"use client";
+import { Suspense } from "react";
+import CallbackClient from "./CallbackClient";
 
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabaseClient";
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
-export default function AuthCallbackPage() {
-  const router = useRouter();
-
-  useEffect(() => {
-    const run = async () => {
-      const params = new URLSearchParams(window.location.search);
-      const code = params.get("code");
-      if (code) {
-        await supabase.auth.exchangeCodeForSession(code);
-      }
-      router.replace("/dashboard");
-    };
-    run();
-  }, [router]);
-
+export default function Page() {
   return (
-    <div className="mx-auto max-w-md rounded-2xl border border-[var(--line)] bg-white/90 p-6 text-sm text-[var(--muted)]">
-      Signing you in…
-    </div>
+    <Suspense fallback={<div style={{ padding: 24 }}>Signing you in…</div>}>
+      <CallbackClient />
+    </Suspense>
   );
 }

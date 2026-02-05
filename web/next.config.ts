@@ -8,7 +8,7 @@ const API_ORIGIN_RAW =
 const API_ORIGIN = API_ORIGIN_RAW.replace(/\/$/, "");
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  output: "standalone",
   reactCompiler: true,
   async rewrites() {
     return [
