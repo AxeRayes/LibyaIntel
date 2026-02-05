@@ -1,3 +1,5 @@
+import MarketDashboard, { type MarketQuotesResponse } from "@/components/MarketDashboard";
+
 export const dynamic = "force-dynamic";
 
 const API_BASE =
@@ -64,8 +66,29 @@ async function getActivity(): Promise<ActivityResponse> {
   return res.json();
 }
 
+async function getMarketQuotes(): Promise<MarketQuotesResponse> {
+  try {
+    const res = await fetch(`${API_BASE}/api/market/quotes`, {
+      next: { revalidate: 300 },
+    });
+    if (!res.ok) return { as_of: null, items: [], ok: false };
+    const data = await res.json();
+    return {
+      as_of: data.as_of ?? null,
+      items: Array.isArray(data.items) ? data.items : [],
+      ok: true,
+    };
+  } catch {
+    return { as_of: null, items: [], ok: false };
+  }
+}
+
 export default async function Page() {
-  const [preview, activity] = await Promise.all([getPreview(), getActivity()]);
+  const [preview, activity, quotes] = await Promise.all([
+    getPreview(),
+    getActivity(),
+    getMarketQuotes(),
+  ]);
   const lastUpdated = preview.last_updated
     ? formatTime(preview.last_updated)
     : "—";
@@ -98,6 +121,8 @@ export default async function Page() {
           </a>
         </div>
       </section>
+
+      <MarketDashboard quotes={quotes} />
 
       <section className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <div className="rounded-2xl border border-[var(--line)] bg-white/90 p-4">
