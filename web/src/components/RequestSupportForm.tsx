@@ -37,7 +37,8 @@ export default function RequestSupportForm() {
   const endpoint = useMemo(() => {
     const base = API_BASE.trim();
     if (!base) return "/api/service-requests";
-    return `${base.replace(/\\/$/, "")}/api/service-requests`;
+    const clean = base.endsWith("/") ? base.slice(0, -1) : base;
+    return `${clean}/api/service-requests`;
   }, []);
 
   const update = (key: keyof FormState, value: string) => {
