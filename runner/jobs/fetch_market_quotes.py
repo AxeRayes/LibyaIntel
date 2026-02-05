@@ -71,7 +71,7 @@ def _fetch_cbl_official_fx(timeout_s: int) -> list[Quote]:
     if table is None:
         raise RuntimeError("CBL_PARSE_FAIL missing currency-table")
 
-    # CBL uses names in the "Currency" column.
+    # CBL uses names in the "Currency" column, typically prefixed with "Currency:".
     name_to_instrument = {
         "american dollar": "USD",
         "euro": "EUR",
@@ -92,7 +92,11 @@ def _fetch_cbl_official_fx(timeout_s: int) -> list[Quote]:
         unit_s = tds[2].get_text(" ", strip=True)
         avg_s = tds[3].get_text(" ", strip=True)
 
-        instrument = name_to_instrument.get(currency_name.strip().lower())
+        date_s = re.sub(r"^date:\s*", "", date_s.strip(), flags=re.I)
+
+        currency_key = currency_name.strip().lower()
+        currency_key = re.sub(r"^currency:\s*", "", currency_key)
+        instrument = name_to_instrument.get(currency_key)
         if not instrument:
             continue
 
@@ -395,4 +399,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-
