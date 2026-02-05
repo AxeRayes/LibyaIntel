@@ -52,6 +52,42 @@ AR_CORE_KEYWORDS = [
 
 ATTACH_RE = re.compile(r'href="([^"]+\.(?:pdf|docx?|jpg|jpeg|png))"', re.I)
 
+_OPENAI_CLIENT = None
+
+
+def _get_openai_client():
+    global _OPENAI_CLIENT
+    if _OPENAI_CLIENT is not None:
+        return _OPENAI_CLIENT
+    try:
+        from openai import OpenAI
+    except Exception:
+        return None
+    _OPENAI_CLIENT = OpenAI()
+    return _OPENAI_CLIENT
+
+
+def translate_to_english(text: str | None) -> str | None:
+    if not text:
+        return text
+    # Skip if already ASCII (likely English)
+    if all(ord(c) < 128 for c in text):
+        return text
+    if not os.getenv("OPENAI_API_KEY"):
+        return text
+    client = _get_openai_client()
+    if client is None:
+        return text
+    try:
+        r = client.responses.create(
+            model="gpt-4.1-mini",
+            input=f"Translate this procurement title to professional English only:\n{text}",
+        )
+        out = (r.output_text or "").strip()
+        return out or text
+    except Exception:
+        return text
+
 
 def _load_source_meta() -> dict:
     if not CONFIG_PATH.exists():
@@ -374,6 +410,8 @@ def run(db_url: str, source_filter: str | None = None):
         sector = meta.get(source_key or "", {}).get("sector") or classify_sector(text)
         deadline = extract_deadline(text)
         summary_text = summarize(text)
+        title_en = translate_to_english(title)
+        summary_en = None
         confidence = 0.2
         if deadline:
             confidence += 0.4
@@ -384,11 +422,11 @@ def run(db_url: str, source_filter: str | None = None):
         cur.execute(
             """
             INSERT INTO tenders (
-                source, buyer, title, summary,
+                source, buyer, title, summary, title_en, summary_en,
                 publish_date, deadline_date, sector, url, raw_article_id,
                 language, confidence_score, pdf_text, attachments_count
             )
-            VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+            VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
             ON CONFLICT (url) DO NOTHING
             """,
             (
@@ -396,6 +434,8 @@ def run(db_url: str, source_filter: str | None = None):
                 buyer,
                 title,
                 summary_text,
+                title_en,
+                summary_en,
                 publish_date,
                 deadline,
                 sector,

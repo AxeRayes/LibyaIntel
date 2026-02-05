@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import argparse
 import os
 import time
 from datetime import datetime, timezone, timedelta
@@ -32,10 +33,10 @@ def md_escape(s: str) -> str:
     return (s or "").replace("\n", " ").strip()
 
 
-def run():
+def run(mode: str):
     db_url = os.environ["DATABASE_URL"]
     now = utcnow()
-    last_run = load_last_run()
+    window_start = now - timedelta(days=7)
 
     conn = psycopg2.connect(db_url)
     cur = conn.cursor()
@@ -45,17 +46,16 @@ def run():
           source,
           buyer,
           COALESCE(sector, 'unknown') AS sector,
-          COALESCE(title, '') AS title,
+          COALESCE(title_en, title, '') AS title,
           publish_date,
           deadline_date,
           COALESCE(attachments_count, 0) AS attachments_count,
           url,
           created_at
         FROM tenders
-        WHERE created_at >= %s
+        WHERE created_at >= (now() at time zone 'utc') - interval '7 days'
         ORDER BY buyer, created_at DESC
-        """,
-        (last_run,),
+        """
     )
     rows = cur.fetchall()
     conn.close()
@@ -79,7 +79,7 @@ def run():
     lines = []
     lines.append("# LibyaIntel Procurement Digest")
     lines.append("")
-    lines.append(f"**Window:** {last_run.date().isoformat()} → {now.date().isoformat()}")
+    lines.append(f"**Window:** {window_start.date().isoformat()} -> {now.date().isoformat()}")
     lines.append(f"**Total new items:** {len(rows)}")
     lines.append("")
 
@@ -126,11 +126,12 @@ def run():
 
     subject_prefix = os.getenv("DIGEST_SUBJECT_PREFIX", "[LibyaIntel] Procurement Digest").strip()
     subject = f"{subject_prefix} ({now.date().isoformat()})"
-    send_resend_email(body, subject)
-    save_last_run(now)
+    if mode != "demo":
+        send_resend_email(body, subject)
+        save_last_run(now)
     print(
         f"DIGEST_OK path={OUT_PATH} items={len(rows)} buyers={len(by_buyer)} "
-        f"window_start={last_run.isoformat()}"
+        f"window_start={window_start.isoformat()}"
     )
 
 
@@ -181,4 +182,12 @@ def send_resend_email(markdown_body: str, subject: str):
 
 
 if __name__ == "__main__":
-    run()
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--mode",
+        choices=["live", "demo"],
+        default="live",
+        help="Use demo mode to skip sending email and not update last-run state",
+    )
+    args = parser.parse_args()
+    run(args.mode)
