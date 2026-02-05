@@ -6,6 +6,8 @@ from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 
 import httpx
+import psycopg2
+import psycopg2.extras
 
 from fastapi import Body, Depends, FastAPI, Header, HTTPException, Query, Response
 from fastapi.middleware.cors import CORSMiddleware
@@ -44,6 +46,24 @@ _SERVICE_CATEGORIES = {
 }
 
 _SERVICE_URGENCY = {"low", "normal", "high"}
+
+def _pg_connect():
+    db_url = os.getenv("DATABASE_URL")
+    if not db_url:
+        raise HTTPException(status_code=500, detail="DATABASE_URL missing")
+    return psycopg2.connect(db_url)
+
+
+def _pg_jsonify_row(row: dict) -> dict:
+    out: dict = {}
+    for k, v in (row or {}).items():
+        if isinstance(v, Decimal):
+            out[k] = float(v)
+        elif isinstance(v, datetime):
+            out[k] = v.astimezone(timezone.utc).isoformat()
+        else:
+            out[k] = str(v) if hasattr(v, "hex") else v
+    return out
 
 
 def require_admin(x_admin_key: str | None = Header(default=None)):
@@ -109,18 +129,28 @@ class MarketQuoteItem(BaseModel):
 
 @app.get("/api/market/quotes")
 def market_quotes():
-    sb = get_client()
-    if not _table_exists(sb, "market_quotes"):
-        return {"as_of": None, "items": []}
+    try:
+        conn = _pg_connect()
+    except HTTPException:
+        raise
 
-    res = (
-        sb.table("market_quotes")
-        .select(
-            "instrument,rate_type,quote_currency,value,unit,as_of,source_name,source_url,status"
-        )
-        .execute()
-    )
-    rows = res.data or []
+    try:
+        with conn:
+            with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+                cur.execute(
+                    """
+                    SELECT instrument,rate_type,quote_currency,value,unit,as_of,source_name,source_url,status
+                    FROM market_quotes
+                    """
+                )
+                rows = cur.fetchall() or []
+    except psycopg2.errors.UndefinedTable:
+        return {"as_of": None, "items": []}
+    finally:
+        try:
+            conn.close()
+        except Exception:
+            pass
 
     items: list[MarketQuoteItem] = []
     latest_as_of: str | None = None
@@ -134,7 +164,12 @@ def market_quotes():
             except ValueError:
                 value = 0.0
 
-        as_of = row.get("as_of") or ""
+        as_of_raw = row.get("as_of")
+        as_of = (
+            as_of_raw.astimezone(timezone.utc).isoformat()
+            if isinstance(as_of_raw, datetime)
+            else (str(as_of_raw) if as_of_raw else "")
+        )
         if as_of and (latest_as_of is None or as_of > latest_as_of):
             latest_as_of = as_of
 
@@ -240,20 +275,42 @@ def create_service_request(payload: ServiceRequestIn):
     if urgency not in _SERVICE_URGENCY:
         raise HTTPException(status_code=400, detail="Invalid urgency")
 
-    sb = get_client()
-    if not _table_exists(sb, "service_requests"):
+    conn = _pg_connect()
+    try:
+        with conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    INSERT INTO service_requests
+                      (category, company_name, contact_name, email, whatsapp, country, city, urgency, message)
+                    VALUES
+                      (%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                    RETURNING id
+                    """,
+                    (
+                        category,
+                        payload.company_name,
+                        payload.contact_name,
+                        payload.email,
+                        payload.whatsapp,
+                        payload.country,
+                        payload.city,
+                        urgency,
+                        payload.message,
+                    ),
+                )
+                row = cur.fetchone()
+                if not row or not row[0]:
+                    raise HTTPException(status_code=500, detail="Failed to create request")
+                request_id = str(row[0])
+    except psycopg2.errors.UndefinedTable:
         raise HTTPException(status_code=500, detail="service_requests table missing")
+    finally:
+        try:
+            conn.close()
+        except Exception:
+            pass
 
-    row = payload.model_dump()
-    row["category"] = category
-    row["urgency"] = urgency
-
-    res = sb.table("service_requests").insert(row).execute()
-    created = (res.data or [])
-    if not created or not created[0].get("id"):
-        raise HTTPException(status_code=500, detail="Failed to create request")
-
-    request_id = str(created[0].get("id"))
     _send_support_request_email(request_id, payload)
     return {"request_id": request_id}
 
@@ -276,25 +333,67 @@ class PartnerIn(BaseModel):
 
 @app.get("/api/admin/partners", dependencies=[Depends(require_admin)])
 def admin_list_partners(limit: int = Query(200, ge=1, le=500)):
-    sb = get_client()
-    if not _table_exists(sb, "partners"):
+    conn = _pg_connect()
+    try:
+        with conn:
+            with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+                cur.execute(
+                    "SELECT * FROM partners ORDER BY created_at DESC LIMIT %s",
+                    (limit,),
+                )
+                rows = cur.fetchall() or []
+        return {"items": [_pg_jsonify_row(r) for r in rows]}
+    except psycopg2.errors.UndefinedTable:
         return {"items": []}
-    res = sb.table("partners").select("*").order("created_at", desc=True).limit(limit).execute()
-    return {"items": res.data or []}
+    finally:
+        try:
+            conn.close()
+        except Exception:
+            pass
 
 
 @app.post("/api/admin/partners", dependencies=[Depends(require_admin)])
 def admin_create_partner(payload: PartnerIn):
-    sb = get_client()
-    if not _table_exists(sb, "partners"):
+    conn = _pg_connect()
+    try:
+        with conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    INSERT INTO partners
+                      (company_name, categories, city, contact_name, email, phone, website,
+                       status, tier, is_public, annual_fee_usd, renewal_date, notes_internal)
+                    VALUES
+                      (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                    RETURNING id
+                    """,
+                    (
+                        payload.company_name,
+                        payload.categories,
+                        payload.city,
+                        payload.contact_name,
+                        payload.email,
+                        payload.phone,
+                        payload.website,
+                        payload.status,
+                        payload.tier,
+                        payload.is_public,
+                        payload.annual_fee_usd,
+                        payload.renewal_date,
+                        payload.notes_internal,
+                    ),
+                )
+                row = cur.fetchone()
+                if not row or not row[0]:
+                    raise HTTPException(status_code=500, detail="Failed to create partner")
+                return {"partner_id": str(row[0])}
+    except psycopg2.errors.UndefinedTable:
         raise HTTPException(status_code=500, detail="partners table missing")
-
-    row = payload.model_dump()
-    res = sb.table("partners").insert(row).execute()
-    created = (res.data or [])
-    if not created or not created[0].get("id"):
-        raise HTTPException(status_code=500, detail="Failed to create partner")
-    return {"partner_id": str(created[0].get("id"))}
+    finally:
+        try:
+            conn.close()
+        except Exception:
+            pass
 
 
 @app.get("/api/admin/requests", dependencies=[Depends(require_admin)])
@@ -302,14 +401,29 @@ def admin_list_requests(
     status: str | None = Query(default=None),
     limit: int = Query(200, ge=1, le=500),
 ):
-    sb = get_client()
-    if not _table_exists(sb, "service_requests"):
+    conn = _pg_connect()
+    try:
+        with conn:
+            with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+                if status:
+                    cur.execute(
+                        "SELECT * FROM service_requests WHERE status=%s ORDER BY created_at DESC LIMIT %s",
+                        (status, limit),
+                    )
+                else:
+                    cur.execute(
+                        "SELECT * FROM service_requests ORDER BY created_at DESC LIMIT %s",
+                        (limit,),
+                    )
+                rows = cur.fetchall() or []
+        return {"items": [_pg_jsonify_row(r) for r in rows]}
+    except psycopg2.errors.UndefinedTable:
         return {"items": []}
-    q = sb.table("service_requests").select("*").order("created_at", desc=True).limit(limit)
-    if status:
-        q = q.eq("status", status)
-    res = q.execute()
-    return {"items": res.data or []}
+    finally:
+        try:
+            conn.close()
+        except Exception:
+            pass
 
 
 class AssignRequestIn(BaseModel):
@@ -318,20 +432,36 @@ class AssignRequestIn(BaseModel):
 
 @app.post("/api/admin/requests/{request_id}/assign", dependencies=[Depends(require_admin)])
 def admin_assign_request(request_id: str, payload: AssignRequestIn):
-    sb = get_client()
-    if not _table_exists(sb, "service_requests") or not _table_exists(sb, "partner_leads"):
-        raise HTTPException(status_code=500, detail="tables missing")
-
     partner_id = (payload.partner_id or "").strip()
     if not partner_id:
         raise HTTPException(status_code=400, detail="partner_id required")
 
-    sb.table("service_requests").update(
-        {"assigned_partner_id": partner_id, "status": "assigned"}
-    ).eq("id", request_id).execute()
-    sb.table("partner_leads").insert(
-        {"partner_id": partner_id, "request_id": request_id, "status": "sent"}
-    ).execute()
+    conn = _pg_connect()
+    try:
+        with conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    UPDATE service_requests
+                    SET assigned_partner_id=%s, status='assigned', updated_at=now()
+                    WHERE id=%s
+                    """,
+                    (partner_id, request_id),
+                )
+                cur.execute(
+                    """
+                    INSERT INTO partner_leads (partner_id, request_id, status)
+                    VALUES (%s,%s,'sent')
+                    """,
+                    (partner_id, request_id),
+                )
+    except psycopg2.errors.UndefinedTable:
+        raise HTTPException(status_code=500, detail="tables missing")
+    finally:
+        try:
+            conn.close()
+        except Exception:
+            pass
     return {"ok": True}
 
 

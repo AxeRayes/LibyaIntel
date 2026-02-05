@@ -151,6 +151,10 @@ def _read_parallel_manual_fx() -> list[Quote]:
             value = float(val)
         except Exception:
             continue
+        # Guardrail: never ingest placeholder / invented values.
+        # If an operator hasn't provided a real parallel rate yet, they should leave it as 0.
+        if value <= 0:
+            continue
         out.append(
             Quote(
                 instrument=instrument,

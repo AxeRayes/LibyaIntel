@@ -1,0 +1,23 @@
+[Unit]
+Description=LibyaIntel API (FastAPI)
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User=libyaintel
+Group=libyaintel
+WorkingDirectory=/opt/libyaintel
+EnvironmentFile=/etc/libyaintel/libyaintel.env
+Environment=PYTHONUNBUFFERED=1
+ExecStart=/opt/libyaintel/backend/.venv/bin/uvicorn backend.api.main:app --host 127.0.0.1 --port 8000
+
+Restart=always
+RestartSec=5
+
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=libyaintel-api
+
+[Install]
+WantedBy=multi-user.target

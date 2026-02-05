@@ -1,0 +1,24 @@
+[Unit]
+Description=LibyaIntel Web (Next.js)
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User=libyaintel
+Group=libyaintel
+WorkingDirectory=/opt/libyaintel/web
+Environment=NODE_ENV=production
+Environment=NEXT_TELEMETRY_DISABLED=1
+Environment=API_BASE=http://127.0.0.1:8000
+ExecStart=/usr/bin/npm run start -- -p 3000 -H 127.0.0.1
+
+Restart=always
+RestartSec=5
+
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=libyaintel-web
+
+[Install]
+WantedBy=multi-user.target

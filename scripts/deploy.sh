@@ -20,6 +20,16 @@ if [ ! -x /opt/libyaintel/backend/.venv/bin/pip ]; then
 fi
 /opt/libyaintel/backend/.venv/bin/pip install -r requirements.txt
 
+echo "DEPLOY_WEB"
+cd /opt/libyaintel/web
+if [ -f package-lock.json ]; then
+  npm ci
+else
+  npm install
+fi
+npm run build
+sudo chown -R libyaintel:libyaintel /opt/libyaintel/web/.next /opt/libyaintel/web/node_modules 2>/dev/null || true
+
 echo "DEPLOY_MIGRATIONS"
 if [ -f "/etc/libyaintel/libyaintel.env" ]; then
   set -a
@@ -33,13 +43,19 @@ for f in /opt/libyaintel/migrations/*.sql; do
 done
 
 echo "DEPLOY_SYSTEMD"
+sudo install -m 0644 /opt/libyaintel/systemd/libyaintel-api.service /etc/systemd/system/libyaintel-api.service
 sudo install -m 0644 /opt/libyaintel/systemd/libyaintel-market-quotes.service /etc/systemd/system/libyaintel-market-quotes.service
 sudo install -m 0644 /opt/libyaintel/systemd/libyaintel-market-quotes.timer /etc/systemd/system/libyaintel-market-quotes.timer
+sudo install -m 0644 /opt/libyaintel/systemd/libyaintel-web.service /etc/systemd/system/libyaintel-web.service
 sudo systemctl daemon-reload
+sudo systemctl enable --now libyaintel-api.service
 sudo systemctl enable --now libyaintel-extract-tenders.timer
 sudo systemctl enable --now libyaintel-market-quotes.timer
 sudo systemctl enable --now libyaintel-procurement-digest.timer
+sudo systemctl enable --now libyaintel-web.service
+sudo systemctl restart libyaintel-api.service || true
 sudo systemctl restart libyaintel-extract-tenders.service || true
 sudo systemctl restart libyaintel-procurement-digest.service || true
+sudo systemctl restart libyaintel-web.service || true
 
 echo "DEPLOY_OK"
