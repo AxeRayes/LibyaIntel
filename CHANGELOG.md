@@ -18,3 +18,20 @@ Latest Features
   - migration checklist
   - rollback steps
   - smoke tests
+
+## 2026-02-04
+Impact: Turns procurement ingestion into a sellable weekly digest product.
+
+Latest Features
+- Structured procurement schema (tenders table)
+- Tender extraction job with per-source filtering (--source) and Arabic keyword/deadline handling
+- LPMA detail-page HTML gating (content-based, production-grade)
+- Attachment parsing support (PDF/DOC/DOCX) with fallback gating
+- Weekly procurement digest generator (Markdown)
+  - "new since last digest" window via last_procurement_digest_at.txt
+  - per-buyer grouping + counts
+  - attachments_count signal
+- systemd services/timers
+  - libyaintel-extract-tenders.service + timer
+  - libyaintel-procurement-digest.service + timer
+- deploy.sh installs migrations and enables timers
