@@ -33,8 +33,11 @@ for f in /opt/libyaintel/migrations/*.sql; do
 done
 
 echo "DEPLOY_SYSTEMD"
+sudo install -m 0644 /opt/libyaintel/systemd/libyaintel-market-quotes.service /etc/systemd/system/libyaintel-market-quotes.service
+sudo install -m 0644 /opt/libyaintel/systemd/libyaintel-market-quotes.timer /etc/systemd/system/libyaintel-market-quotes.timer
 sudo systemctl daemon-reload
 sudo systemctl enable --now libyaintel-extract-tenders.timer
+sudo systemctl enable --now libyaintel-market-quotes.timer
 sudo systemctl enable --now libyaintel-procurement-digest.timer
 sudo systemctl restart libyaintel-extract-tenders.service || true
 sudo systemctl restart libyaintel-procurement-digest.service || true

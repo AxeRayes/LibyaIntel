@@ -1,0 +1,10 @@
+[Unit]
+Description=Fetch market quotes (FX, metals, commodities)
+
+[Service]
+Type=oneshot
+User=libyaintel
+EnvironmentFile=/etc/libyaintel/libyaintel.env
+WorkingDirectory=/opt/libyaintel
+ExecStart=/opt/libyaintel/backend/.venv/bin/python -m runner.jobs.fetch_market_quotes
+

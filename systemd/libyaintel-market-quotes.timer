@@ -1,0 +1,11 @@
+[Unit]
+Description=Schedule market quotes fetch
+
+[Timer]
+OnBootSec=5m
+OnUnitActiveSec=30m
+Persistent=true
+
+[Install]
+WantedBy=timers.target
+
