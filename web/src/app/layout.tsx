@@ -63,6 +63,20 @@ export default function RootLayout({
                   <span className="text-base">▤</span>
                   Report Generator
                 </Link>
+                <Link
+                  className="flex items-center gap-3 rounded-xl border border-transparent px-3 py-2 text-[var(--ink)] transition hover:border-[var(--line)] hover:bg-white"
+                  href="/services"
+                >
+                  <span className="text-base">✦</span>
+                  Services
+                </Link>
+                <Link
+                  className="flex items-center gap-3 rounded-xl border border-transparent px-3 py-2 text-[var(--ink)] transition hover:border-[var(--line)] hover:bg-white"
+                  href="/request-support"
+                >
+                  <span className="text-base">➜</span>
+                  Request Support
+                </Link>
               </nav>
               <div className="rounded-2xl border border-[var(--line)] bg-white/80 p-4 text-xs text-[var(--muted)]">
                 Live status wired to Supabase. Keep the feed lean and verified.

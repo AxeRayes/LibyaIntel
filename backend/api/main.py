@@ -30,6 +30,20 @@ app.add_middleware(
 ADMIN_KEY = os.environ.get("ADMIN_API_KEY")
 SUPABASE_URL = os.environ.get("SUPABASE_URL")
 SUPABASE_SERVICE_ROLE_KEY = os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
+SUPPORT_INBOX_EMAIL = os.environ.get("SUPPORT_INBOX_EMAIL")
+
+_SERVICE_CATEGORIES = {
+    "legal",
+    "tax",
+    "accounting",
+    "payroll",
+    "eor/manpower",
+    "recruitment",
+    "training",
+    "consultancy",
+}
+
+_SERVICE_URGENCY = {"low", "normal", "high"}
 
 
 def require_admin(x_admin_key: str | None = Header(default=None)):
@@ -143,6 +157,182 @@ def market_quotes():
 
     items.sort(key=lambda i: (i.instrument, i.rate_type, i.quote_currency))
     return {"as_of": latest_as_of, "items": [i.model_dump() for i in items]}
+
+
+class ServiceRequestIn(BaseModel):
+    category: str
+    company_name: str | None = None
+    contact_name: str
+    email: str
+    whatsapp: str | None = None
+    country: str | None = None
+    city: str | None = None
+    urgency: str = "normal"
+    message: str
+
+
+def _send_support_request_email(request_id: str, payload: ServiceRequestIn) -> None:
+    api_key = os.getenv("RESEND_API_KEY")
+    if not api_key:
+        print(f"SUPPORT_EMAIL_SKIP request_id={request_id} missing RESEND_API_KEY")
+        return
+    if not SUPPORT_INBOX_EMAIL:
+        print(f"SUPPORT_EMAIL_SKIP request_id={request_id} missing SUPPORT_INBOX_EMAIL")
+        return
+
+    try:
+        import resend
+    except Exception as exc:
+        print(f"SUPPORT_EMAIL_FAIL request_id={request_id} missing resend err={exc}")
+        return
+
+    resend.api_key = api_key
+    from_addr = (
+        os.getenv("SUPPORT_FROM")
+        or os.getenv("DIGEST_FROM")
+        or "LibyaIntel <alerts@libyaintel.com>"
+    ).strip()
+    subject = f"[LibyaIntel] New support request ({payload.category})"
+    body = "\n".join(
+        [
+            "New service request received:",
+            "",
+            f"Request ID: {request_id}",
+            f"Category: {payload.category}",
+            f"Urgency: {payload.urgency}",
+            "",
+            f"Contact: {payload.contact_name}",
+            f"Company: {payload.company_name or ''}".strip(),
+            f"Email: {payload.email}",
+            f"WhatsApp: {payload.whatsapp or ''}".strip(),
+            f"Location: {', '.join([x for x in [payload.city, payload.country] if x])}",
+            "",
+            "Message:",
+            payload.message,
+        ]
+    ).strip()
+
+    try:
+        resp = resend.Emails.send(
+            {
+                "from": from_addr,
+                "to": [SUPPORT_INBOX_EMAIL],
+                "subject": subject,
+                "text": body,
+            }
+        )
+        msg_id = resp.get("id") if isinstance(resp, dict) else ""
+        print(f"SUPPORT_EMAIL_OK request_id={request_id} id={msg_id}")
+    except Exception as exc:
+        # Avoid printing request payload or recipient details (PII) into logs.
+        print(f"SUPPORT_EMAIL_FAIL request_id={request_id} err={type(exc).__name__}")
+
+
+@app.post("/api/service-requests")
+def create_service_request(payload: ServiceRequestIn):
+    if not SUPPORT_INBOX_EMAIL or not os.getenv("RESEND_API_KEY"):
+        raise HTTPException(status_code=500, detail="Support email not configured")
+
+    category = (payload.category or "").strip().lower()
+    urgency = (payload.urgency or "").strip().lower()
+    if category not in _SERVICE_CATEGORIES:
+        raise HTTPException(status_code=400, detail="Invalid category")
+    if urgency not in _SERVICE_URGENCY:
+        raise HTTPException(status_code=400, detail="Invalid urgency")
+
+    sb = get_client()
+    if not _table_exists(sb, "service_requests"):
+        raise HTTPException(status_code=500, detail="service_requests table missing")
+
+    row = payload.model_dump()
+    row["category"] = category
+    row["urgency"] = urgency
+
+    res = sb.table("service_requests").insert(row).execute()
+    created = (res.data or [])
+    if not created or not created[0].get("id"):
+        raise HTTPException(status_code=500, detail="Failed to create request")
+
+    request_id = str(created[0].get("id"))
+    _send_support_request_email(request_id, payload)
+    return {"request_id": request_id}
+
+
+class PartnerIn(BaseModel):
+    company_name: str
+    categories: list[str] = []
+    city: str | None = None
+    contact_name: str | None = None
+    email: str | None = None
+    phone: str | None = None
+    website: str | None = None
+    status: str = "pending"
+    tier: str = "standard"
+    is_public: bool = False
+    annual_fee_usd: float | None = None
+    renewal_date: str | None = None
+    notes_internal: str | None = None
+
+
+@app.get("/api/admin/partners", dependencies=[Depends(require_admin)])
+def admin_list_partners(limit: int = Query(200, ge=1, le=500)):
+    sb = get_client()
+    if not _table_exists(sb, "partners"):
+        return {"items": []}
+    res = sb.table("partners").select("*").order("created_at", desc=True).limit(limit).execute()
+    return {"items": res.data or []}
+
+
+@app.post("/api/admin/partners", dependencies=[Depends(require_admin)])
+def admin_create_partner(payload: PartnerIn):
+    sb = get_client()
+    if not _table_exists(sb, "partners"):
+        raise HTTPException(status_code=500, detail="partners table missing")
+
+    row = payload.model_dump()
+    res = sb.table("partners").insert(row).execute()
+    created = (res.data or [])
+    if not created or not created[0].get("id"):
+        raise HTTPException(status_code=500, detail="Failed to create partner")
+    return {"partner_id": str(created[0].get("id"))}
+
+
+@app.get("/api/admin/requests", dependencies=[Depends(require_admin)])
+def admin_list_requests(
+    status: str | None = Query(default=None),
+    limit: int = Query(200, ge=1, le=500),
+):
+    sb = get_client()
+    if not _table_exists(sb, "service_requests"):
+        return {"items": []}
+    q = sb.table("service_requests").select("*").order("created_at", desc=True).limit(limit)
+    if status:
+        q = q.eq("status", status)
+    res = q.execute()
+    return {"items": res.data or []}
+
+
+class AssignRequestIn(BaseModel):
+    partner_id: str
+
+
+@app.post("/api/admin/requests/{request_id}/assign", dependencies=[Depends(require_admin)])
+def admin_assign_request(request_id: str, payload: AssignRequestIn):
+    sb = get_client()
+    if not _table_exists(sb, "service_requests") or not _table_exists(sb, "partner_leads"):
+        raise HTTPException(status_code=500, detail="tables missing")
+
+    partner_id = (payload.partner_id or "").strip()
+    if not partner_id:
+        raise HTTPException(status_code=400, detail="partner_id required")
+
+    sb.table("service_requests").update(
+        {"assigned_partner_id": partner_id, "status": "assigned"}
+    ).eq("id", request_id).execute()
+    sb.table("partner_leads").insert(
+        {"partner_id": partner_id, "request_id": request_id, "status": "sent"}
+    ).execute()
+    return {"ok": True}
 
 
 @app.get("/feed")
